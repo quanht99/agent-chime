@@ -1,0 +1,70 @@
+name: AgentChime
+options:
+  bundleIdPrefix: io.github.quanht99
+  deploymentTarget:
+    macOS: "13.0"
+settings:
+  base:
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    SWIFT_VERSION: "5.0"
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Manual
+    ENABLE_HARDENED_RUNTIME: NO
+targets:
+  AgentChime:
+    type: application
+    platform: macOS
+    sources:
+      - AgentChime/App
+      - AgentChime/Shared
+      - path: AgentChime/Resources/Sounds
+        type: folder
+        buildPhase: resources
+    dependencies:
+      - target: agentchime-hook
+        embed: true
+        copy:
+          destination: executables
+    info:
+      path: AgentChime/App/Info.plist
+      properties:
+        LSUIElement: true
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        NSHumanReadableCopyright: "Copyright (c) 2026 quanht99"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.quanht99.agentchime
+        GENERATE_INFOPLIST_FILE: NO
+  agentchime-hook:
+    type: tool
+    platform: macOS
+    sources:
+      - AgentChime/Hook
+      - AgentChime/Shared
+    settings:
+      base:
+        PRODUCT_NAME: agentchime-hook
+  AgentChimeTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: AgentChime/Tests
+        excludes:
+          - "Fixtures/**"
+      - AgentChime/Shared
+    dependencies:
+      - target: agentchime-hook
+        link: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.quanht99.agentchime.tests
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  AgentChime:
+    build:
+      targets:
+        AgentChime: all
+    test:
+      targets:
+        - AgentChimeTests

@@ -1,0 +1,35 @@
+[hooks.state."/Users/example/.codex/hooks.json:session_start:0:0"]
+enabled = true
+trusted_hash = "sha256:fake"
+
+[hooks.state."/Users/example/.codex/hooks.json:user_prompt_submit:0:0"]
+enabled = true
+trusted_hash = "sha256:fake"
+
+[hooks.state."/Users/example/.codex/hooks.json:pre_tool_use:0:0"]
+enabled = true
+trusted_hash = "sha256:fake"
+
+[hooks.state."/Users/example/.codex/hooks.json:permission_request:0:0"]
+enabled = true
+trusted_hash = "sha256:fake"
+
+[hooks.state."/Users/example/.codex/hooks.json:post_tool_use:0:0"]
+enabled = true
+trusted_hash = "sha256:fake"
+
+[hooks.state."/Users/example/.codex/hooks.json:subagent_start:0:0"]
+enabled = true
+trusted_hash = "sha256:fake"
+
+[hooks.state."/Users/example/.codex/hooks.json:subagent_stop:0:0"]
+enabled = true
+trusted_hash = "sha256:fake"
+
+[hooks.state."/Users/example/.codex/hooks.json:stop:0:0"]
+enabled = true
+trusted_hash = "sha256:fake"
+
+[hooks.state."/Users/example/.codex/hooks.json:interrupt:0:0"]
+enabled = true
+trusted_hash = "sha256:fake"
