@@ -1,0 +1,265 @@
+{
+  "skillListingBudgetFraction": 0.04,
+  "env": {
+    "k1": "example",
+    "k2": "example",
+    "k3": "example",
+    "k4": "example"
+  },
+  "attribution": {
+    "k5": "example",
+    "k6": "example"
+  },
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "k7": "example"
+  },
+  "model": "example",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/example/bin/existing-hook PreToolUse"
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/example/bin/existing-hook PreToolUse",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/example/bin/existing-hook SessionStart",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/example/bin/existing-hook UserPromptSubmit",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/example/bin/existing-hook Stop",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/example/bin/existing-hook StopFailure",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/example/bin/existing-hook SubagentStart",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/example/bin/existing-hook SubagentStop",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/example/bin/existing-hook TeammateIdle",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/example/bin/existing-hook PostToolUse",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/example/bin/existing-hook PostToolUseFailure",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/example/bin/existing-hook PermissionRequest",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/example/bin/existing-hook PostCompact",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Elicitation": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/example/bin/existing-hook Elicitation",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "ElicitationResult": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/example/bin/existing-hook ElicitationResult",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/example/bin/existing-hook SessionEnd",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolBatch": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/example/bin/existing-hook PostToolBatch",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "k8": "example",
+    "k9": "example",
+    "k10": 0
+  },
+  "enabledPlugins": {
+    "k11": true,
+    "k12": true,
+    "k13": true,
+    "k14": true,
+    "k15": true,
+    "k16": true,
+    "k17": true,
+    "k18": true
+  },
+  "extraKnownMarketplaces": {
+    "k19": {
+      "k20": {
+        "k21": "example",
+        "k22": "example"
+      }
+    },
+    "k23": {
+      "k24": {
+        "k25": "example",
+        "k26": "example"
+      }
+    },
+    "k27": {
+      "k28": {
+        "k29": "example",
+        "k30": "example"
+      }
+    }
+  },
+  "effortLevel": "example",
+  "modelSettings": {
+    "k31": {
+      "k32": "example"
+    },
+    "k33": {
+      "k34": "example"
+    }
+  },
+  "tui": "example",
+  "voice": {
+    "k35": true,
+    "k36": "example"
+  },
+  "skipDangerousModePermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
+  "theme": "example",
+  "agentPushNotifEnabled": true,
+  "voiceEnabled": true
+}

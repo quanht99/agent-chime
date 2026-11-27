@@ -20,10 +20,20 @@ enum SoundPlayer {
         return (try? AVAudioFile(forReading: url)) != nil
     }
 
+    /// System and bundled values are plain file names inside their folder. Like Go's
+    /// `Library.ValidName`, an empty name, "." or "..", or a name with a path separator is
+    /// rejected, so a hand-edited config can't reach outside the folder.
+    static func isValidName(_ choice: SoundChoice) -> Bool {
+        if choice.source == .file { return true }
+        let v = choice.value
+        return !v.isEmpty && v != "." && v != ".." && !v.contains("/") && !v.contains("\\")
+    }
+
     static func resolvePlayable(_ choice: SoundChoice, kind: AlertKind) -> (url: URL, warning: SoundWarning?) {
+        let fallback = url(for: SoundChoice.defaultChoice(for: kind))
+        guard isValidName(choice) else { return (fallback, SoundWarning(kind: kind, path: choice.value)) }
         let wanted = url(for: choice)
         if isPlayable(wanted) { return (wanted, nil) }
-        let fallback = url(for: SoundChoice.defaultChoice(for: kind))
         return (fallback, SoundWarning(kind: kind, path: wanted.path))
     }
 

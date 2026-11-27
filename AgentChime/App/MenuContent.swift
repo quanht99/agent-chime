@@ -31,7 +31,7 @@ struct MenuContent: View {
             Text(L.t(.menuNoAlert, lang))
         }
         if let w = state.state.soundWarning {
-            Text(L.t(.soundWarning, lang, w.path))
+            Text(w.text(lang))
         }
         if state.needsSetup {
             Button(L.t(.menuNeedsSetup, lang)) { SettingsWindow.show(state) }

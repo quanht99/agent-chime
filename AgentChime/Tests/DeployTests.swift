@@ -61,4 +61,10 @@ final class DeployTests: IsolatedTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: dest.appendingPathComponent("Sounds/a.wav").path))
         XCTAssertTrue(FileManager.default.fileExists(atPath: note.path))
     }
+
+    func testDeployCreatesOnlyHelperAndSounds() throws {
+        _ = try Deployer.sync(helper: helper, sounds: sounds, into: dest)
+        let entries = try FileManager.default.contentsOfDirectory(atPath: dest.path).sorted()
+        XCTAssertEqual(entries, ["Sounds", "agentchime-hook"])
+    }
 }

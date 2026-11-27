@@ -7,8 +7,14 @@ APP=/Applications/AgentChime.app
 BUNDLE_ID=io.github.quanht99.agentchime
 
 xcodegen generate
+set +e
 xcodebuild -project AgentChime.xcodeproj -scheme AgentChime -configuration Release \
-  -derivedDataPath build-release build | grep -E "error:|warning: .*AgentChime|BUILD (SUCCEEDED|FAILED)" || true
+  -derivedDataPath build-release \
+  build | grep -E "error:|warning: .*AgentChime|BUILD (SUCCEEDED|FAILED)"
+status=${PIPESTATUS[0]}
+set -e
+# A failed build must stop here: build-release/ may still hold the previous app.
+[ "$status" -eq 0 ] || { echo "xcodebuild failed (exit $status); nothing installed." >&2; exit 1; }
 BUILT=build-release/Build/Products/Release/AgentChime.app
 [ -d "$BUILT" ] || { echo "Build failed: $BUILT not found" >&2; exit 1; }
 

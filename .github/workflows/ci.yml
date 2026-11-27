@@ -1,0 +1,51 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  go-linux:
+    runs-on: ubuntu-latest
+    env:
+      CGO_ENABLED: 0
+    defaults:
+      run:
+        working-directory: go
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache-dependency-path: go/go.sum
+      - run: go vet ./...
+      - run: go test ./...
+      - run: bash scripts/e2e-linux.sh
+      - name: Cross builds
+        run: |
+          for t in linux/amd64 linux/arm64 windows/amd64 windows/arm64; do
+            GOOS=${t%/*} GOARCH=${t#*/} go build -trimpath -o /dev/null ./cmd/agentchime
+          done
+
+  go-windows:
+    runs-on: windows-latest
+    env:
+      CGO_ENABLED: 0
+    defaults:
+      run:
+        working-directory: go
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache-dependency-path: go/go.sum
+      - run: go vet ./...
+      - run: go test ./...
+
+  swift-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install xcodegen
+      - run: bash scripts/test.sh

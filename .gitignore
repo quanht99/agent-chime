@@ -4,3 +4,6 @@ build-release/
 xcuserdata/
 .DS_Store
 .superpowers/
+
+go/dist/
+dist/

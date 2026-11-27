@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="agentchime-token" content="{{TOKEN}}">
+<title>AgentChime</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main>
+  <h1 id="title"></h1>
+  <div id="banner-reload" class="banner error" role="alert" hidden></div>
+  <div id="banner-notray" class="banner" hidden></div>
+  <div id="banner-noplayer" class="banner warn" hidden></div>
+
+  <section id="sounds">
+    <div class="sound-row" data-kind="done">
+      <div class="row-head"><span class="label" id="label-done"></span></div>
+      <div class="row-controls">
+        <div class="picker">
+          <button type="button" class="picker-button" id="pick-done" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="label-done pick-done"></button>
+          <ul class="listbox" id="list-done" role="listbox" tabindex="-1" aria-labelledby="label-done" hidden></ul>
+          <input type="file" class="file-input" id="file-done" hidden>
+        </div>
+        <button type="button" id="preview-done"></button>
+      </div>
+      <label class="volume"><span id="vol-label-done"></span>
+        <input type="range" id="vol-done" min="0" max="100" step="1">
+        <output id="vol-out-done"></output></label>
+    </div>
+    <div class="sound-row" data-kind="attention">
+      <div class="row-head"><span class="label" id="label-attention"></span></div>
+      <div class="row-controls">
+        <div class="picker">
+          <button type="button" class="picker-button" id="pick-attention" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="label-attention pick-attention"></button>
+          <ul class="listbox" id="list-attention" role="listbox" tabindex="-1" aria-labelledby="label-attention" hidden></ul>
+          <input type="file" class="file-input" id="file-attention" hidden>
+        </div>
+        <button type="button" id="preview-attention"></button>
+      </div>
+      <label class="volume"><span id="vol-label-attention"></span>
+        <input type="range" id="vol-attention" min="0" max="100" step="1">
+        <output id="vol-out-attention"></output></label>
+    </div>
+    <div id="sound-error" class="error" role="alert" hidden></div>
+  </section>
+
+  <section id="threshold">
+    <label><span id="threshold-prefix"></span>
+      <input type="number" id="threshold-input" min="0" max="120" step="1">
+      <span id="threshold-suffix"></span></label>
+  </section>
+
+  <section id="hooks">
+    <div class="hook-row" id="hook-claude">
+      <strong class="hook-name">Claude Code</strong>
+      <span class="hook-text"></span>
+      <span class="hook-buttons"><button type="button" class="install"></button> <button type="button" class="remove"></button></span>
+    </div>
+    <div class="hook-row" id="hook-codex">
+      <strong class="hook-name">Codex</strong>
+      <span class="hook-text"></span>
+      <span class="hook-buttons"><button type="button" class="install"></button> <button type="button" class="remove"></button></span>
+      <p class="note hook-retrust" hidden></p>
+      <p class="note hook-warn" hidden></p>
+    </div>
+    <div id="hook-error" class="error" role="alert" hidden></div>
+  </section>
+
+  <section id="options">
+    <label class="check"><input type="checkbox" id="opt-headless"> <span id="opt-headless-text"></span></label>
+    <label class="check" id="opt-autostart-row"><input type="checkbox" id="opt-autostart"> <span id="opt-autostart-text"></span></label>
+    <div id="autostart-error" class="error" role="alert" hidden></div>
+    <label class="select"><span id="opt-language-text"></span>
+      <select id="opt-language"><option value="en">English</option><option value="vi">Tiếng Việt</option></select></label>
+  </section>
+
+  <section id="mute">
+    <h2 id="mute-title"></h2>
+    <p id="mute-text"></p>
+    <div class="btn-row">
+      <button type="button" id="mute-30"></button>
+      <button type="button" id="mute-60"></button>
+      <button type="button" id="mute-forever"></button>
+      <button type="button" id="unmute"></button>
+    </div>
+  </section>
+
+  <section id="status">
+    <h2 id="status-title"></h2>
+    <p id="status-last-alert"></p>
+    <p id="status-last-skip" hidden></p>
+    <p id="status-warning" class="warn-text" hidden></p>
+    <button type="button" id="open-log"></button>
+  </section>
+
+  <section id="quit-section">
+    <button type="button" id="quit"></button>
+    <span id="version" class="note"></span>
+  </section>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

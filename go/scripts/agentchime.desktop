@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=AgentChime
+Comment=Sound alerts for Claude Code and Codex
+Exec=agentchime
+Icon=agentchime
+Terminal=false
+Categories=Utility;

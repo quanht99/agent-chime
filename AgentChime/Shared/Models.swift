@@ -80,6 +80,10 @@ struct SkipRecord: Codable, Equatable {
 struct SoundWarning: Codable, Equatable {
     var kind: AlertKind
     var path: String
+
+    func text(_ lang: Language) -> String {
+        return L.t(.soundWarning, lang, path)
+    }
 }
 
 enum DurationFormat {

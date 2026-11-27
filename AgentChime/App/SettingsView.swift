@@ -123,7 +123,7 @@ struct SettingsView: View {
                 Text(L.t(.statusLastSkip, lang, s.summary(lang), s.reason.text(lang), TimeFormat.hhmm(s.date)))
             }
             if let w = state.state.soundWarning {
-                Text(L.t(.soundWarning, lang, w.path))
+                Text(w.text(lang))
             }
             Button(L.t(.openLog, lang)) { openLog() }
         }

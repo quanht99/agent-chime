@@ -54,4 +54,26 @@ final class NotifierTests: IsolatedTestCase {
         _ = Notifier.fire(event(.attention, session: "b"), config: AgentChimeConfig(), now: t0.addingTimeInterval(10), isHeadless: false, player: player())
         XCTAssertNil(StateStore.load().soundWarning)
     }
+
+    func testUnknownSourceInStoredConfigFallsBack() throws {
+        let json = #"{"soundDone":{"source":"cloud","value":"Aurora.wav"},"volumeDone":0.4}"#
+        Paths.ensureDirectory(Paths.config.deletingLastPathComponent())
+        try Data(json.utf8).write(to: Paths.config)
+        let cfg = ConfigStore.load()
+        XCTAssertEqual(cfg.soundDone, SoundChoice.defaultDone)
+        XCTAssertEqual(cfg.volumeDone, 0.4)
+        let out = Notifier.fire(event(.done, duration: 100), config: cfg, now: t0, isHeadless: false, player: player())
+        XCTAssertEqual(out, .played(SoundPlayer.url(for: .defaultDone)))
+        XCTAssertEqual(calls.last?.1, 0.4)
+    }
+
+    func testFileChoicePlaysThatFile() throws {
+        let wav = home.appendingPathComponent("mine.wav")
+        try makeWAV(at: wav)
+        var cfg = AgentChimeConfig()
+        cfg.soundDone = SoundChoice(source: .file, value: wav.path)
+        let out = Notifier.fire(event(.done, duration: 100), config: cfg, now: t0, isHeadless: false, player: player())
+        XCTAssertEqual(out, .played(wav))
+        XCTAssertNil(StateStore.load().soundWarning)
+    }
 }

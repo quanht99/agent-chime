@@ -12,8 +12,8 @@ struct SoundRow: View {
     private var system: [SoundChoice] { SoundLibrary.systemSounds() }
     private var builtIn: [SoundChoice] { SoundLibrary.bundledSounds() }
 
-    private func setSound(_ choice: SoundChoice) {
-        if kind == .done { state.config.soundDone = choice } else { state.config.soundAttention = choice }
+    private func pick(_ choice: SoundChoice) {
+        state.choose(choice, for: kind)
     }
 
     private var volume: Binding<Double> {
@@ -31,13 +31,14 @@ struct SoundRow: View {
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
         if panel.runModal() == .OK, let url = panel.url {
-            setSound(SoundChoice(source: .file, value: url.path))
+            pick(SoundChoice(source: .file, value: url.path))
         }
     }
 
     private var groups: [SoundMenu.Group] {
         // The current choice always appears, even if it vanished from the lists.
-        let missing = !system.contains(current) && !builtIn.contains(current) && current.source != .file
+        let missing = !system.contains(current) && !builtIn.contains(current)
+            && current.source != .file
         var groups = [
             SoundMenu.Group(title: L.t(.groupSystem, lang), items: system),
             SoundMenu.Group(title: L.t(.groupBuiltIn, lang), items: builtIn + (missing ? [current] : [])),
@@ -56,7 +57,7 @@ struct SoundRow: View {
                     groups: groups,
                     selection: current,
                     chooseFileTitle: L.t(.chooseFile, lang),
-                    onSelect: { setSound($0) },
+                    onSelect: { pick($0) },
                     onChooseFile: { chooseFile() },
                     onHover: { state.hoverPreview($0, kind: kind) },
                     onClose: { state.endHoverPreview() }

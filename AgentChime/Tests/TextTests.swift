@@ -29,4 +29,15 @@ final class TextTests: IsolatedTestCase {
                            L.t(key, .vi).components(separatedBy: "%@").count, "\(key)")
         }
     }
+
+    func testSoundWarningText() throws {
+        let missing = SoundWarning(kind: .done, path: "/Users/example/ding.mp3")
+        XCTAssertEqual(missing.text(.en), "⚠ Couldn't open /Users/example/ding.mp3. Played the default sound instead.")
+    }
+
+    func testOldSoundWarningStillDecodes() throws {
+        let old = Data(#"{"kind":"attention","path":"/Users/example/a.wav"}"#.utf8)
+        let w = try JSONCoding.decoder().decode(SoundWarning.self, from: old)
+        XCTAssertEqual(w, SoundWarning(kind: .attention, path: "/Users/example/a.wav"))
+    }
 }

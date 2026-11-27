@@ -78,4 +78,15 @@ final class ConfigTests: IsolatedTestCase {
         XCTAssertEqual(DurationFormat.short(192), "3m12s")
         XCTAssertEqual(DurationFormat.short(3900), "1h05m")
     }
+
+    func testUnknownSourceFallsBack() throws {
+        let json = #"{"soundDone":{"source":"cloud","value":"x"},"soundAttention":{"source":"bundled","value":"B.wav"},"doneThresholdSeconds":30}"#
+        let c = try JSONCoding.decoder().decode(AgentChimeConfig.self, from: Data(json.utf8))
+        XCTAssertEqual(c.soundDone, SoundChoice.defaultDone)
+        XCTAssertEqual(c.soundAttention, SoundChoice(source: .bundled, value: "B.wav"))
+        XCTAssertEqual(c.doneThresholdSeconds, 30)
+        let bad = #"{"soundAttention":{"source":"cloud","value":"x"}}"#
+        let c2 = try JSONCoding.decoder().decode(AgentChimeConfig.self, from: Data(bad.utf8))
+        XCTAssertEqual(c2.soundAttention, SoundChoice.defaultAttention)
+    }
 }

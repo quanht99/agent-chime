@@ -32,6 +32,7 @@ enum Deployer {
             try fm.removeItem(at: soundsDest.appendingPathComponent(name))
             changed.append("Sounds/\(name)")
         }
+
         return changed
     }
 

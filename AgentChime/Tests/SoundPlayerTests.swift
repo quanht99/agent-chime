@@ -45,4 +45,33 @@ final class SoundPlayerTests: IsolatedTestCase {
         XCTAssertEqual(r.url.path, glass)
         XCTAssertEqual(r.warning, SoundWarning(kind: .done, path: Paths.soundsDir.appendingPathComponent("Gone.wav").path))
     }
+
+    func testNamesWithPathPartsFallBackLikeGo() throws {
+        // A real WAV in the sounds folder, so the traversal below would be playable if it were let through.
+        try makeWAV(at: Paths.soundsDir.appendingPathComponent("P.wav"))
+        let bad: [SoundChoice] = [
+            SoundChoice(source: .bundled, value: "../Sounds/P.wav"),
+            SoundChoice(source: .bundled, value: "sub/P.wav"),
+            SoundChoice(source: .bundled, value: "..\\P.wav"),
+            SoundChoice(source: .system, value: "../../Library/Sounds/Glass"),
+            SoundChoice(source: .bundled, value: ""),
+            SoundChoice(source: .bundled, value: ".."),
+            SoundChoice(source: .bundled, value: "."),
+        ]
+        for c in bad {
+            XCTAssertFalse(SoundPlayer.isValidName(c), c.value)
+            let r = SoundPlayer.resolvePlayable(c, kind: .attention)
+            XCTAssertEqual(r.url.path, sosumi, c.value)
+            XCTAssertEqual(r.warning, SoundWarning(kind: .attention, path: c.value), c.value)
+        }
+    }
+
+    func testPlainNamesAndFilesAreValid() throws {
+        XCTAssertTrue(SoundPlayer.isValidName(SoundChoice(source: .system, value: "Glass")))
+        XCTAssertTrue(SoundPlayer.isValidName(SoundChoice(source: .bundled, value: "Two..Dots.wav")))
+        XCTAssertTrue(SoundPlayer.isValidName(SoundChoice(source: .file, value: "/Users/example/My Sounds/ding.mp3")))
+        try makeWAV(at: Paths.soundsDir.appendingPathComponent("Two..Dots.wav"))
+        let r = SoundPlayer.resolvePlayable(SoundChoice(source: .bundled, value: "Two..Dots.wav"), kind: .done)
+        XCTAssertNil(r.warning)
+    }
 }

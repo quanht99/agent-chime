@@ -82,6 +82,11 @@ final class AppState: ObservableObject {
         refresh()
     }
 
+    /// Sets the sound choice for an alert kind.
+    func choose(_ c: SoundChoice, for kind: AlertKind) {
+        if kind == .done { config.soundDone = c } else { config.soundAttention = c }
+    }
+
     func mute(for seconds: TimeInterval?) {
         config.mute(for: seconds, now: Date())
         refresh()
@@ -117,7 +122,8 @@ final class AppState: ObservableObject {
 
     private func playHover(_ choice: SoundChoice) {
         stopHover()
-        guard let sound = NSSound(contentsOf: SoundPlayer.url(for: choice), byReference: true) else { return }
+        guard SoundPlayer.isValidName(choice),
+              let sound = NSSound(contentsOf: SoundPlayer.url(for: choice), byReference: true) else { return }
         sound.volume = Float(min(1, max(0, config.volume(for: hoverKind))))
         sound.play()
         hoverSound = sound

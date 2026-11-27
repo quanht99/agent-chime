@@ -25,11 +25,24 @@ final class SoundLibraryTests: IsolatedTestCase {
             .appendingPathComponent("Resources/Sounds")
         let files = try FileManager.default.contentsOfDirectory(atPath: dir.path)
             .filter { SoundLibrary.audioExtensions.contains(($0 as NSString).pathExtension.lowercased()) }
-        XCTAssertGreaterThanOrEqual(files.count, 4)
+        XCTAssertEqual(files.count, 14)
         let credits = try String(contentsOf: dir.appendingPathComponent("CREDITS.md"))
         for f in files {
             XCTAssertTrue(SoundPlayer.isPlayable(dir.appendingPathComponent(f)), f)
             XCTAssertTrue(credits.contains(f), "CREDITS.md missing \(f)")
+        }
+    }
+
+    func testBuiltInListsFourteenSounds() throws {
+        let dir = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Resources/Sounds")
+        let sounds = SoundLibrary.bundledSounds(in: dir)
+        XCTAssertEqual(sounds.count, 14)
+        XCTAssertTrue(sounds.allSatisfy { $0.source == .bundled })
+        let names = Set(sounds.map { $0.displayName })
+        for n in ["Aurora", "Bloom", "Breeze", "Crystal", "Drift", "Ember", "Lumen", "Pebble", "Ripple", "Tide"] {
+            XCTAssertTrue(names.contains(n), n)
         }
     }
 }
