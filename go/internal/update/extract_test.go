@@ -6,6 +6,7 @@ import (
 	"compress/gzip"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -81,7 +82,8 @@ func TestExtractZipRoot(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dir, "README.txt")); err == nil {
 		t.Fatal("README written")
 	}
-	if st, _ := os.Stat(got["AgentChime.exe"]); st.Mode().Perm() != 0o755 {
+	// Windows has no POSIX modes: a writable file always reads back as 0666.
+	if st, _ := os.Stat(got["AgentChime.exe"]); runtime.GOOS != "windows" && st.Mode().Perm() != 0o755 {
 		t.Fatalf("mode %v", st.Mode())
 	}
 }
