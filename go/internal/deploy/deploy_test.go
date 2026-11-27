@@ -309,8 +309,11 @@ func TestSyncCleansOldHelpers(t *testing.T) {
 func TestSyncCopiesHelperBeforeProgram(t *testing.T) {
 	p := testenv.Home(t)
 	// A non-empty directory at the helper path makes the helper copy fail.
+	// The copy order is the same on every OS, so this runs the non-Windows
+	// copy: the Windows one first moves the existing path aside, and that
+	// would move the directory out of the way too.
 	os.MkdirAll(filepath.Join(p.SettingsHelper, "x"), 0o755)
-	if _, err := Sync(p, mkSelfWithHelper(t, p, "H"), mapFS(nil)); err == nil {
+	if _, err := syncWithOS(p, mkSelfWithHelper(t, p, "H"), mapFS(nil), "linux"); err == nil {
 		t.Fatal("expected the helper copy to fail")
 	}
 	if _, err := os.Stat(p.Program); !os.IsNotExist(err) {
