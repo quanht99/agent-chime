@@ -98,6 +98,10 @@ func TestHookWithOpenStdinStillExits(t *testing.T) {
 	testenv.Home(t)
 	home := os.Getenv("AGENTCHIME_HOME")
 	bin := build(t)
+	// The first launch of a freshly built binary can take seconds while the OS
+	// scans it (Gatekeeper on macOS, Defender on Windows). Launch it once so
+	// that cost stays out of the timing below.
+	runBin(t, bin, home, "", "hook")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, bin, "hook", "claude-prompt")
