@@ -1,0 +1,9 @@
+# Check out text files with LF on every OS. Tests compare the JSON and TOML
+# fixtures byte for byte, and Git for Windows would otherwise turn them into
+# CRLF on checkout.
+* text=auto eol=lf
+
+*.wav binary
+*.png binary
+*.ico binary
+*.icns binary
