@@ -9,7 +9,9 @@ VERSION="${1:-}"
 xcodegen generate
 rm -rf build-release
 set +e
+# The generic destination builds for both Apple silicon and Intel Macs.
 xcodebuild -project AgentChime.xcodeproj -scheme AgentChime -configuration Release \
+  -destination 'generic/platform=macOS' \
   -derivedDataPath build-release \
   MARKETING_VERSION="$VERSION" \
   build | grep -E "error:|BUILD (SUCCEEDED|FAILED)"

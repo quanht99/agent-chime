@@ -41,8 +41,19 @@ exec form (a program plus `args`), and older versions may not support `args`.
 ## Install
 
 Download the file for your system from the
-[Releases page](https://github.com/quanht99/agent-chime/releases). If there is no release yet,
-build from source; each system below has the steps.
+[latest release](https://github.com/quanht99/agent-chime/releases/latest):
+
+| System | File |
+|---|---|
+| macOS 13 or later, Apple silicon or Intel | `AgentChime-<version>-macos.zip` |
+| Windows on Intel or AMD (most PCs) | `AgentChime-<version>-windows-amd64.zip` |
+| Windows on ARM | `AgentChime-<version>-windows-arm64.zip` |
+| Linux on Intel or AMD (most PCs) | `AgentChime-<version>-linux-amd64.tar.gz` |
+| Linux on ARM | `AgentChime-<version>-linux-arm64.tar.gz` |
+
+GitHub Actions builds these files from the tagged source code. `SHA256SUMS.txt` in the release
+lists a checksum for each file. To build from source instead, follow the steps for your system
+below.
 
 ### macOS
 
@@ -267,7 +278,15 @@ scripts/package-mac.sh <version>   # macOS zip, into dist/
 
 Outputs in `go/dist/`: `AgentChime-<version>-windows-<arch>.zip` and
 `AgentChime-<version>-linux-<arch>.tar.gz`. Builds use `CGO_ENABLED=0`; Windows builds add
-`-ldflags "-H windowsgui"`.
+`-ldflags "-H windowsgui"`. The macOS app is built for both Apple silicon and Intel.
+
+To publish a release, push a version tag. The `release` workflow builds all five files on GitHub,
+adds `SHA256SUMS.txt`, and creates the release:
+
+```bash
+git tag v0.2.0
+git push origin v0.2.0
+```
 
 ## Third-party notices
 
