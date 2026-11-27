@@ -63,3 +63,57 @@ func TestWaitForInstance(t *testing.T) {
 		t.Fatalf("got %+v %v", got, ok)
 	}
 }
+
+func TestWaitForLockTakesItWhenReleased(t *testing.T) {
+	p := testenv.Home(t)
+	if err := os.MkdirAll(p.DataDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	held, err := lockApp(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	type res struct {
+		f   *os.File
+		err error
+	}
+	done := make(chan res, 1)
+	go func() {
+		f, err := waitForLock(p, 10*time.Millisecond, 2*time.Second)
+		done <- res{f, err}
+	}()
+	select {
+	case <-done:
+		t.Fatal("waitForLock returned while the lock was held")
+	case <-time.After(100 * time.Millisecond):
+	}
+	held.Close()
+	select {
+	case r := <-done:
+		if r.err != nil || r.f == nil {
+			t.Fatalf("waitForLock = %v, %v", r.f, r.err)
+		}
+		r.f.Close()
+	case <-time.After(500 * time.Millisecond):
+		t.Fatal("waitForLock did not take the released lock")
+	}
+}
+
+func TestWaitForLockGivesUp(t *testing.T) {
+	p := testenv.Home(t)
+	if err := os.MkdirAll(p.DataDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	held, err := lockApp(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer held.Close()
+	f, err := waitForLock(p, 10*time.Millisecond, 100*time.Millisecond)
+	if f != nil {
+		f.Close()
+	}
+	if !errors.Is(err, fsx.ErrLocked) {
+		t.Fatalf("err = %v, want ErrLocked", err)
+	}
+}

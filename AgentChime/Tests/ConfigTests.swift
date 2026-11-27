@@ -55,6 +55,20 @@ final class ConfigTests: IsolatedTestCase {
         XCTAssertEqual(ConfigStore.load(), c)
     }
 
+    func testCheckForUpdatesDefaultsOn() throws {
+        for json in ["{}", #"{"language":"vi"}"#] {
+            let c = try JSONCoding.decoder().decode(AgentChimeConfig.self, from: Data(json.utf8))
+            XCTAssertTrue(c.checkForUpdates)
+        }
+    }
+
+    func testCheckForUpdatesRoundTrip() throws {
+        var c = AgentChimeConfig()
+        c.checkForUpdates = false
+        try ConfigStore.save(c)
+        XCTAssertFalse(ConfigStore.load().checkForUpdates)
+    }
+
     func testMuteAndUnmute() {
         var c = AgentChimeConfig()
         c.mute(for: 1800, now: t0)

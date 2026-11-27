@@ -18,8 +18,8 @@ func TestSharedTextMatchesSwift(t *testing.T) {
 		t.Fatal(err)
 	}
 	ms := swiftEntry.FindAllStringSubmatch(string(src), -1)
-	if len(ms) != 53 {
-		t.Fatalf("extracted %d Swift entries, want 53", len(ms))
+	if len(ms) != 74 {
+		t.Fatalf("extracted %d Swift entries, want 74", len(ms))
 	}
 	for _, m := range ms {
 		e, ok := table[Key(m[1])]
@@ -50,8 +50,8 @@ func TestEveryKeyHasBothLanguages(t *testing.T) {
 			t.Errorf("key %s placeholder count differs", k)
 		}
 	}
-	if len(seen) != 53+3 {
-		t.Errorf("got %d keys, want 56", len(seen))
+	if len(seen) != 74+3 {
+		t.Errorf("got %d keys, want 77", len(seen))
 	}
 }
 
@@ -64,6 +64,11 @@ func TestPlaceholders(t *testing.T) {
 	}
 	if got := T("summaryDone", VI, "Claude"); got != "Claude xong" {
 		t.Errorf("got %q", got)
+	}
+	for _, k := range []Key{"updateAvailable", "currentVersion", "lastChecked", "updateMenuItem", "updateFailed", "updatedTo"} {
+		if n := strings.Count(T(k, EN), "%@"); n != 1 {
+			t.Errorf("%s: %d placeholders, want 1", k, n)
+		}
 	}
 	if got := T("menuMute", EN, "extra"); got != "Mute" {
 		t.Errorf("extra args: got %q", got)

@@ -130,6 +130,27 @@ func TestConfigClampsAndSaves(t *testing.T) {
 	}
 }
 
+func TestConfigSetsCheckForUpdates(t *testing.T) {
+	h := newHarness(t)
+	h.post("/api/config", map[string]any{"volumeDone": 0.5})
+	before := h.cfg()
+	if !before.CheckForUpdates {
+		t.Fatal("default should be on")
+	}
+	if r := h.post("/api/config", map[string]any{"checkForUpdates": false}); r.status != 200 {
+		t.Fatalf("%d %s", r.status, r.body)
+	}
+	got := h.cfg()
+	if got.CheckForUpdates {
+		t.Fatal("not saved")
+	}
+	want := before
+	want.CheckForUpdates = false
+	if got != want {
+		t.Fatalf("other fields changed: %+v vs %+v", got, want)
+	}
+}
+
 func TestUnknownSourceRejected(t *testing.T) {
 	h := newHarness(t)
 	h.post("/api/config", map[string]any{"volumeDone": 0.5})

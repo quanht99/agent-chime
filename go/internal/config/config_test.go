@@ -30,7 +30,7 @@ func TestDefaults(t *testing.T) {
 		t.Errorf("sounds %+v %+v", c.SoundDone, c.SoundAttention)
 	}
 	if c.VolumeDone != 1 || c.VolumeAttention != 1 || c.DoneThresholdSeconds != 60 || c.MutedUntil != nil ||
-		c.AlertHeadless || c.Language != i18n.EN || c.SettingsShownOnce {
+		c.AlertHeadless || c.Language != i18n.EN || c.SettingsShownOnce || !c.CheckForUpdates {
 		t.Errorf("defaults %+v", c)
 	}
 }
@@ -157,6 +157,7 @@ func TestSaveFormat(t *testing.T) {
 	b, _ := os.ReadFile(p.Config)
 	want := `{
   "alertHeadless": false,
+  "checkForUpdates": true,
   "doneThresholdSeconds": 60,
   "language": "en",
   "settingsShownOnce": false,
@@ -250,5 +251,25 @@ func TestNullMutedUntilIgnored(t *testing.T) {
 	write(t, p, `{"mutedUntil":null}`)
 	if Load(p).MutedUntil != nil {
 		t.Error("null should leave mutedUntil nil")
+	}
+}
+
+func TestCheckForUpdatesDefaultsOn(t *testing.T) {
+	p := testenv.Home(t)
+	write(t, p, `{"language":"en"}`)
+	if !Load(p).CheckForUpdates {
+		t.Error("missing field should default to true")
+	}
+}
+
+func TestCheckForUpdatesOffSurvivesReload(t *testing.T) {
+	p := testenv.Home(t)
+	c := Default()
+	c.CheckForUpdates = false
+	if err := Save(p, c); err != nil {
+		t.Fatal(err)
+	}
+	if Load(p).CheckForUpdates {
+		t.Error("false was not kept")
 	}
 }

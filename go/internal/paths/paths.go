@@ -13,8 +13,10 @@ type Paths struct {
 	Log, LogOld, DebugEnvFlag                   string
 	SoundsDir, CustomSoundsDir, BackupsDir      string
 	Program                                     string // installed copy
+	SettingsHelper                              string // installed settings window helper
 	ClaudeSettings, CodexHooks, CodexConfig     string
 	SystemSoundsDir, AutostartFile              string
+	DebDir                                      string // where the .deb installs the pair; "" off Linux
 }
 
 // Resolve is pure: it never touches the OS.
@@ -62,12 +64,14 @@ func Resolve(goos string, getenv func(string) string, userHome string) Paths {
 		CustomSoundsDir: join(dataDir, "CustomSounds"),
 		BackupsDir:      join(dataDir, "Backups"),
 		Program:         join(dataDir, "agentchime"),
+		SettingsHelper:  join(dataDir, "agentchime-settings"),
 		ClaudeSettings:  join(home, ".claude", "settings.json"),
 		CodexHooks:      join(home, ".codex", "hooks.json"),
 		CodexConfig:     join(home, ".codex", "config.toml"),
 	}
 	if goos == "windows" {
 		p.Program = join(dataDir, "AgentChime.exe")
+		p.SettingsHelper = join(dataDir, "AgentChime-Settings.exe")
 	}
 
 	switch {
@@ -83,6 +87,14 @@ func Resolve(goos string, getenv func(string) string, userHome string) Paths {
 		p.SystemSoundsDir = "/System/Library/Sounds"
 	default:
 		p.SystemSoundsDir = "/usr/share/sounds/freedesktop/stereo"
+	}
+
+	switch {
+	case goos != "linux":
+	case override:
+		p.DebDir = join(home, "usr-lib-agentchime")
+	default:
+		p.DebDir = "/usr/lib/agentchime"
 	}
 
 	if goos == "linux" {

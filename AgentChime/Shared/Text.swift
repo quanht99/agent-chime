@@ -55,6 +55,27 @@ enum L {
         case reasonShortTurn
         case reasonDuplicate
         case reasonNested
+        case updatesTitle
+        case currentVersion
+        case checkAutomatically
+        case checkNow
+        case upToDate
+        case checkFailed
+        case lastChecked
+        case checking
+        case downloading
+        case updateAvailable
+        case updateButton
+        case whatsNew
+        case updateMenuItem
+        case updateUnverified
+        case updateFailed
+        case newVersionFailed
+        case restartToFinish
+        case updatedTo
+        case sourceBuild
+        case moveToApplications
+        case cantInstallHere
     }
 
     static func t(_ key: Key, _ lang: Language, _ args: String...) -> String {
@@ -122,6 +143,27 @@ enum L {
         case .reasonShortTurn: return ("short turn (%@ < %@)", "lượt ngắn (%@ < %@)")
         case .reasonDuplicate: return ("same as the previous alert", "trùng với lần báo trước")
         case .reasonNested: return ("agent running inside another agent", "agent chạy lồng trong agent khác")
+        case .updatesTitle: return ("Updates", "Cập nhật")
+        case .currentVersion: return ("Version %@", "Phiên bản %@")
+        case .checkAutomatically: return ("Check for updates automatically", "Tự động kiểm tra bản cập nhật")
+        case .checkNow: return ("Check now", "Kiểm tra ngay")
+        case .upToDate: return ("You're up to date", "Bạn đang dùng bản mới nhất")
+        case .checkFailed: return ("Couldn't check for updates", "Không kiểm tra được bản cập nhật")
+        case .lastChecked: return ("Last checked %@", "Lần kiểm tra cuối: %@")
+        case .checking: return ("Checking…", "Đang kiểm tra…")
+        case .downloading: return ("Downloading…", "Đang tải…")
+        case .updateAvailable: return ("Version %@ is available", "Đã có phiên bản %@")
+        case .updateButton: return ("Update", "Cập nhật")
+        case .whatsNew: return ("What's new", "Có gì mới")
+        case .updateMenuItem: return ("Update to %@…", "Cập nhật lên %@…")
+        case .updateUnverified: return ("The update couldn't be verified, so it was skipped", "Không xác minh được bản cập nhật nên đã bỏ qua")
+        case .updateFailed: return ("Update failed: %@", "Cập nhật thất bại: %@")
+        case .newVersionFailed: return ("The new version didn't start, so this one was kept", "Bản mới không chạy được nên vẫn giữ bản hiện tại")
+        case .restartToFinish: return ("Update installed. Restart AgentChime to finish", "Đã cài bản cập nhật. Hãy khởi động lại AgentChime để hoàn tất")
+        case .updatedTo: return ("Updated to %@", "Đã cập nhật lên %@")
+        case .sourceBuild: return ("Built from source: updates are off", "Bản tự build: không tự cập nhật")
+        case .moveToApplications: return ("Move AgentChime to Applications first", "Hãy chuyển AgentChime vào thư mục Applications trước")
+        case .cantInstallHere: return ("AgentChime can't replace itself in this folder. Download the update from the release page", "AgentChime không thể tự thay thế trong thư mục này. Hãy tải bản cập nhật từ trang phát hành")
         }
     }
 }

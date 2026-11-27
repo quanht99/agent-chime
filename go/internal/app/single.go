@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"os"
 	"time"
 
@@ -33,6 +34,25 @@ func waitForInstance(p paths.Paths, timeout, every time.Duration) (instance.Info
 		}
 		if !time.Now().Before(deadline) {
 			return instance.Info{}, false
+		}
+		time.Sleep(every)
+	}
+}
+
+// waitForLock retries lockApp every interval until it succeeds or timeout passes, then returns
+// fsx.ErrLocked. A new process uses it to wait for the old app to quit.
+func waitForLock(p paths.Paths, every, timeout time.Duration) (*os.File, error) {
+	deadline := time.Now().Add(timeout)
+	for {
+		f, err := lockApp(p)
+		if err == nil {
+			return f, nil
+		}
+		if !errors.Is(err, fsx.ErrLocked) {
+			return nil, err
+		}
+		if !time.Now().Before(deadline) {
+			return nil, fsx.ErrLocked
 		}
 		time.Sleep(every)
 	}

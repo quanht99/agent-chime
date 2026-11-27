@@ -1,4 +1,4 @@
-// EN/VI tables. The first 53 entries mirror AgentChime/Shared/Text.swift exactly (checked by a test).
+// EN/VI tables. The first 74 entries mirror AgentChime/Shared/Text.swift exactly (checked by a test).
 
 package i18n
 
@@ -56,6 +56,27 @@ var entries = []entry{
 	{"reasonShortTurn", "short turn (%@ < %@)", "lượt ngắn (%@ < %@)"},
 	{"reasonDuplicate", "same as the previous alert", "trùng với lần báo trước"},
 	{"reasonNested", "agent running inside another agent", "agent chạy lồng trong agent khác"},
+	{"updatesTitle", "Updates", "Cập nhật"},
+	{"currentVersion", "Version %@", "Phiên bản %@"},
+	{"checkAutomatically", "Check for updates automatically", "Tự động kiểm tra bản cập nhật"},
+	{"checkNow", "Check now", "Kiểm tra ngay"},
+	{"upToDate", "You're up to date", "Bạn đang dùng bản mới nhất"},
+	{"checkFailed", "Couldn't check for updates", "Không kiểm tra được bản cập nhật"},
+	{"lastChecked", "Last checked %@", "Lần kiểm tra cuối: %@"},
+	{"checking", "Checking…", "Đang kiểm tra…"},
+	{"downloading", "Downloading…", "Đang tải…"},
+	{"updateAvailable", "Version %@ is available", "Đã có phiên bản %@"},
+	{"updateButton", "Update", "Cập nhật"},
+	{"whatsNew", "What's new", "Có gì mới"},
+	{"updateMenuItem", "Update to %@…", "Cập nhật lên %@…"},
+	{"updateUnverified", "The update couldn't be verified, so it was skipped", "Không xác minh được bản cập nhật nên đã bỏ qua"},
+	{"updateFailed", "Update failed: %@", "Cập nhật thất bại: %@"},
+	{"newVersionFailed", "The new version didn't start, so this one was kept", "Bản mới không chạy được nên vẫn giữ bản hiện tại"},
+	{"restartToFinish", "Update installed. Restart AgentChime to finish", "Đã cài bản cập nhật. Hãy khởi động lại AgentChime để hoàn tất"},
+	{"updatedTo", "Updated to %@", "Đã cập nhật lên %@"},
+	{"sourceBuild", "Built from source: updates are off", "Bản tự build: không tự cập nhật"},
+	{"moveToApplications", "Move AgentChime to Applications first", "Hãy chuyển AgentChime vào thư mục Applications trước"},
+	{"cantInstallHere", "AgentChime can't replace itself in this folder. Download the update from the release page", "AgentChime không thể tự thay thế trong thư mục này. Hãy tải bản cập nhật từ trang phát hành"},
 	{"noPlayer", "No sound player found. Install pipewire-bin or pulseaudio-utils.", "Không tìm thấy trình phát âm thanh. Hãy cài pipewire-bin hoặc pulseaudio-utils."},
 	{"noTray", "Your desktop does not show tray icons; this page has every control.", "Desktop của bạn không hiện biểu tượng ở khay hệ thống; trang này có đủ mọi nút điều khiển."},
 	{"codexPathWarning", "Codex hooks may not run: the path to AgentChime contains a space.", "Hook của Codex có thể không chạy: đường dẫn tới AgentChime có dấu cách."},

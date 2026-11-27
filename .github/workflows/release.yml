@@ -10,7 +10,19 @@ permissions:
   contents: read
 
 jobs:
-  windows-linux:
+  # Refuse a tag that is not plain vX.Y.Z before anything is built or published.
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the tag
+        run: |
+          if ! printf '%s' "$GITHUB_REF_NAME" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "tag '$GITHUB_REF_NAME' is not vX.Y.Z" >&2
+            exit 1
+          fi
+
+  windows:
+    needs: check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,14 +30,38 @@ jobs:
         with:
           go-version: '1.26'
           cache-dependency-path: go/go.sum
-      - run: bash go/scripts/package.sh "${GITHUB_REF_NAME#v}"
+      - run: bash go/scripts/package-windows.sh "${GITHUB_REF_NAME#v}"
       - uses: actions/upload-artifact@v4
         with:
-          name: windows-linux
-          path: go/dist/AgentChime-*
+          name: windows
+          path: go/dist/AgentChime-*-windows-*.zip
+          if-no-files-found: error
+
+  # ubuntu-24.04, not ubuntu-latest: the settings helper's glibc floor must stay at Ubuntu 24.04.
+  linux:
+    needs: check
+    strategy:
+      matrix:
+        include:
+          - {runner: ubuntu-24.04, arch: amd64}
+          - {runner: ubuntu-24.04-arm, arch: arm64}
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache-dependency-path: go/go.sum
+      - run: sudo apt-get update && sudo apt-get install -y libgtk-4-dev libwebkitgtk-6.0-dev zip
+      - run: bash go/scripts/package-linux.sh "${GITHUB_REF_NAME#v}" ${{ matrix.arch }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-${{ matrix.arch }}
+          path: go/dist/AgentChime-*-linux-${{ matrix.arch }}.*
           if-no-files-found: error
 
   macos:
+    needs: check
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,18 +74,39 @@ jobs:
           if-no-files-found: error
 
   publish:
-    needs: [windows-linux, macos]
+    needs: [check, windows, linux, macos]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache-dependency-path: go/go.sum
       - uses: actions/download-artifact@v4
         with:
           path: files
           merge-multiple: true
+      - name: Check the file list
+        working-directory: files
+        run: |
+          ls -l AgentChime-*
+          n=$(ls AgentChime-* | wc -l)
+          if [ "$n" -ne 7 ]; then
+            echo "expected 7 files (2 Windows zips, 2 tarballs, 2 .deb, 1 macOS zip), found $n" >&2
+            exit 1
+          fi
       - name: Checksums
         working-directory: files
         run: sha256sum AgentChime-* > SHA256SUMS.txt && cat SHA256SUMS.txt
+      - name: Sign the update manifest
+        working-directory: go
+        env:
+          UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
+        run: |
+          test -n "$UPDATE_SIGNING_KEY" || { echo "UPDATE_SIGNING_KEY is not set"; exit 1; }
+          go run ./scripts/signmanifest -version "${GITHUB_REF_NAME#v}" -dir ../files -out ../files
       - name: Create the release
         env:
           GH_TOKEN: ${{ github.token }}

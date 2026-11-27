@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -16,26 +17,67 @@ import (
 	"github.com/quanht99/agent-chime/go/internal/paths"
 )
 
-// Sync copies self to p.Program and syncs sounds. changed lists the
-// destination paths written or removed.
+// Files names the two executables to deploy. Helper may be empty.
+type Files struct{ Program, Helper string }
+
+// copyFile is a seam for tests that record the copy order.
+var copyFile = copySelf
+
+// Sync copies self (and the settings helper next to it, when there is one)
+// to their install locations and syncs sounds. changed lists the destination
+// paths written or removed.
 func Sync(p paths.Paths, self string, builtin fs.FS) (changed []string, err error) {
 	return syncWithOS(p, self, builtin, runtime.GOOS)
 }
 
 func syncWithOS(p paths.Paths, self string, builtin fs.FS, goos string) ([]string, error) {
+	return syncFilesWithOS(p, Files{Program: self, Helper: helperSource(self, p.SettingsHelper)}, builtin, goos)
+}
+
+// SyncFiles copies f.Helper to p.SettingsHelper, then f.Program to p.Program,
+// then syncs sounds. A non-empty f.Helper that is not a regular file is an
+// error before anything is copied.
+func SyncFiles(p paths.Paths, f Files, builtin fs.FS) ([]string, error) {
+	return syncFilesWithOS(p, f, builtin, runtime.GOOS)
+}
+
+func syncFilesWithOS(p paths.Paths, f Files, builtin fs.FS, goos string) ([]string, error) {
+	if f.Helper != "" {
+		if fi, err := os.Stat(f.Helper); err != nil {
+			return nil, err
+		} else if !fi.Mode().IsRegular() {
+			return nil, fmt.Errorf("%s is not a regular file", f.Helper)
+		}
+	}
 	var changed []string
 	if err := os.MkdirAll(filepath.Dir(p.Program), 0o755); err != nil {
 		return nil, err
 	}
+	if err := os.MkdirAll(filepath.Dir(p.SettingsHelper), 0o755); err != nil {
+		return nil, err
+	}
 	if goos == "windows" {
 		// Leftovers from earlier upgrades; they fail to delete while running.
-		if olds, _ := filepath.Glob(p.Program + ".old-*"); olds != nil {
+		for _, target := range []string{p.Program, p.SettingsHelper} {
+			olds, _ := filepath.Glob(target + ".old-*")
 			for _, o := range olds {
 				_ = os.Remove(o)
 			}
 		}
 	}
-	copied, err := copySelf(p.Program, self, goos)
+	// The helper is copied BEFORE the main program. If an update is cut short
+	// after one copy, the data folder still holds a working pair: the program
+	// is the file that starts everything, so it must be the last one replaced.
+	if f.Helper != "" {
+		helperCopied, err := copyFile(p.SettingsHelper, f.Helper, goos)
+		if err != nil {
+			return changed, err
+		}
+		if helperCopied {
+			changed = append(changed, p.SettingsHelper)
+		}
+	}
+	copied, err := copyFile(p.Program, f.Program, goos)
 	if err != nil {
 		return changed, err
 	}
@@ -45,6 +87,20 @@ func syncWithOS(p paths.Paths, self string, builtin fs.FS, goos string) ([]strin
 	c, err := syncDir(p.SoundsDir, builtin)
 	changed = append(changed, c...)
 	return changed, err
+}
+
+// helperSource returns the settings helper that sits next to the real file
+// behind self (symlinks resolved), or "" when there is none.
+func helperSource(self, helper string) string {
+	resolved, err := filepath.EvalSymlinks(self)
+	if err != nil {
+		resolved = self
+	}
+	src := filepath.Join(filepath.Dir(resolved), filepath.Base(helper))
+	if fi, err := os.Stat(src); err != nil || !fi.Mode().IsRegular() {
+		return ""
+	}
+	return src
 }
 
 func copySelf(program, self, goos string) (bool, error) {

@@ -66,6 +66,7 @@ type Config struct {
 	AlertHeadless        bool        `json:"alertHeadless"`
 	Language             i18n.Lang   `json:"language"`
 	SettingsShownOnce    bool        `json:"settingsShownOnce"`
+	CheckForUpdates      bool        `json:"checkForUpdates"`
 }
 
 func Default() Config {
@@ -76,6 +77,7 @@ func Default() Config {
 		VolumeAttention:      1,
 		DoneThresholdSeconds: 60,
 		Language:             i18n.EN,
+		CheckForUpdates:      true,
 	}
 }
 
@@ -125,6 +127,7 @@ func decode(data []byte) (Config, error) {
 		c.Language = lang
 	}
 	field(raw, "settingsShownOnce", &c.SettingsShownOnce)
+	field(raw, "checkForUpdates", &c.CheckForUpdates)
 	return c, nil
 }
 

@@ -3,9 +3,13 @@ import SwiftUI
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let appState = AppState()
+    let afterUpdate = CommandLine.arguments.contains("--after-update")
+    lazy var updater = Updater(afterUpdate: afterUpdate)
     private var timer: Timer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
+        Log.write("started \(version)")
         // 1. Copy the helper and built-in sounds into Application Support.
         let bundle = Bundle.main
         let helper = bundle.bundleURL.appendingPathComponent("Contents/MacOS/agentchime-hook")
@@ -23,20 +27,31 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         // 4. First launch: show Settings once.
-        if !appState.config.settingsShownOnce {
-            SettingsWindow.show(appState)
+        let firstLaunch = !appState.config.settingsShownOnce
+        if firstLaunch || afterUpdate {
+            SettingsWindow.show(appState, updater: updater)
             appState.config.settingsShownOnce = true
+        }
+
+        updater.start { [weak self] in self?.appState.config ?? ConfigStore.load() }
+
+        // The old app waits for this line. Afterwards stdout goes to /dev/null (SIGPIPE is already
+        // ignored in main.swift).
+        if afterUpdate {
+            print("ready")
+            fflush(stdout)
+            let null = open("/dev/null", O_WRONLY)
+            if null >= 0 { dup2(null, 1); close(null) }
         }
     }
 }
 
-@main
 struct AgentChimeApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
 
     var body: some Scene {
         MenuBarExtra {
-            MenuContent(state: delegate.appState)
+            MenuContent(state: delegate.appState, updater: delegate.updater)
         } label: {
             MenuBarIcon(state: delegate.appState)
         }

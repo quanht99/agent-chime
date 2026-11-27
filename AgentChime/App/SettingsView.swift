@@ -3,6 +3,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject var state: AppState
+    @ObservedObject var updater: Updater
     /// The window measures the unscrolled content to size itself, then shows it inside a ScrollView.
     var scrolling = true
 
@@ -53,6 +54,9 @@ struct SettingsView: View {
                 ForEach(Language.allCases, id: \.self) { Text($0.nativeName).tag($0) }
             }
             .fixedSize()
+
+            Divider()
+            updatesSection
 
             Divider()
             statusSection
@@ -108,6 +112,37 @@ struct SettingsView: View {
 
     private func removeButton(_ agent: Agent) -> some View {
         Button(L.t(.remove, lang)) { state.uninstall(agent) }
+    }
+
+    @ViewBuilder
+    private var updatesSection: some View {
+        let st = updater.status
+        let busy = st.phase == .checking || st.phase == .downloading
+        VStack(alignment: .leading, spacing: 6) {
+            Text(L.t(.updatesTitle, lang)).font(.headline)
+            Text(L.t(.currentVersion, lang, st.current))
+            Toggle(L.t(.checkAutomatically, lang), isOn: $state.config.checkForUpdates)
+            HStack {
+                Button(L.t(.checkNow, lang)) { updater.checkNow() }
+                    .disabled(!updater.isRelease || busy)
+                let text = updater.statusText(lang)
+                if !text.isEmpty { Text(text).fixedSize(horizontal: false, vertical: true) }
+            }
+            if let last = st.lastSuccess {
+                Text(L.t(.lastChecked, lang, TimeFormat.hhmm(last))).font(.callout).foregroundColor(.secondary)
+            }
+            if st.canInstall {
+                if let block = updater.blockText(lang) {
+                    Text(block).fixedSize(horizontal: false, vertical: true)
+                    Button(L.t(.whatsNew, lang)) { updater.openReleasePage() }
+                } else {
+                    HStack {
+                        Button(L.t(.updateButton, lang)) { updater.install() }
+                        Button(L.t(.whatsNew, lang)) { updater.openReleasePage() }
+                    }
+                }
+            }
+        }
     }
 
     @ViewBuilder

@@ -2,6 +2,10 @@
 (function () {
   'use strict';
 
+  // A file dropped on the window would navigate away from the page.
+  document.addEventListener('dragover', function (e) { e.preventDefault(); });
+  document.addEventListener('drop', function (e) { e.preventDefault(); });
+
   var token = document.querySelector('meta[name="agentchime-token"]').content;
   var S = null; // last /api/state body
   var pickers = {};
@@ -58,6 +62,19 @@
   async function refresh() {
     var r = await api('GET', '/api/state');
     apply(r);
+  }
+
+  // While the updater is checking or downloading, poll every second until it is done.
+  var fastTimer = null;
+  function fastPoll() {
+    var busy = !!(S && S.update && S.update.busy);
+    if (busy && !fastTimer) {
+      fastTimer = setTimeout(async function () {
+        fastTimer = null;
+        await refresh();
+        fastPoll();
+      }, 1000);
+    }
   }
 
   // ---- helpers ----
@@ -297,6 +314,28 @@
     ['mute-30', 'mute-60', 'mute-forever'].forEach(function (id) { show($(id), !S.muted.on); });
     show($('unmute'), S.muted.on);
 
+    var up = S.update;
+    show($('updates'), !!up);
+    if (up) {
+      $('updates-title').textContent = T('updatesTitle');
+      $('update-version').textContent = T('currentVersion').replace('%@', up.current);
+      $('opt-check-updates-text').textContent = T('checkAutomatically');
+      $('opt-check-updates').checked = up.checkAuto;
+      $('check-now').textContent = T('checkNow');
+      $('update-now').textContent = T('updateButton');
+      $('whats-new').textContent = T('whatsNew');
+      show($('check-now'), up.phase !== 'sourceBuild');
+      show($('update-now'), up.canInstall);
+      show($('whats-new'), !!up.latest);
+      show($('update-buttons'), up.phase !== 'sourceBuild' || up.canInstall || !!up.latest);
+      ['check-now', 'update-now', 'whats-new'].forEach(function (id) { $(id).disabled = up.busy; });
+      $('update-text').textContent = up.text;
+      show($('update-text'), !!up.text);
+      $('update-last').textContent = up.lastChecked;
+      show($('update-last'), !!up.lastChecked);
+    }
+    fastPoll();
+
     $('status-title').textContent = T('statusTitle');
     $('status-last-alert').textContent = S.status.lastAlert;
     $('status-last-skip').textContent = S.status.lastSkip;
@@ -329,6 +368,13 @@
     $('opt-language').addEventListener('change', function () {
       act('/api/config', { language: this.value }, null);
     });
+
+    $('opt-check-updates').addEventListener('change', function () {
+      act('/api/config', { checkForUpdates: this.checked }, null);
+    });
+    $('check-now').addEventListener('click', function () { act('/api/update/check', {}, null); });
+    $('update-now').addEventListener('click', function () { act('/api/update/install', {}, null); });
+    $('whats-new').addEventListener('click', function () { act('/api/update/release-page', {}, null); });
 
     $('mute-30').addEventListener('click', function () { act('/api/mute', { minutes: 30 }, null); });
     $('mute-60').addEventListener('click', function () { act('/api/mute', { minutes: 60 }, null); });

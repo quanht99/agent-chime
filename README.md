@@ -24,7 +24,10 @@ It works with:
 
 In the Claude desktop app, only the Code tab runs hooks. Ordinary chats there make no sound.
 
-AgentChime only plays sounds. It does not read your prompts. No network calls, no telemetry.
+AgentChime only plays sounds. It does not read your prompts. There is no telemetry.
+Once a day AgentChime asks GitHub whether a new version exists. It sends nothing about you or
+your prompts; GitHub sees your IP address, as with any download. You can turn this off in
+Settings → Updates.
 
 ## What runs where
 
@@ -50,6 +53,8 @@ Download the file for your system from the
 | Windows on ARM | `AgentChime-<version>-windows-arm64.zip` |
 | Linux on Intel or AMD (most PCs) | `AgentChime-<version>-linux-amd64.tar.gz` |
 | Linux on ARM | `AgentChime-<version>-linux-arm64.tar.gz` |
+| Ubuntu 24.04+ or Debian 13+ on Intel or AMD | `AgentChime-<version>-linux-amd64.deb` |
+| Ubuntu 24.04+ or Debian 13+ on ARM | `AgentChime-<version>-linux-arm64.deb` |
 
 GitHub Actions builds these files from the tagged source code. `SHA256SUMS.txt` in the release
 lists a checksum for each file. To build from source instead, follow the steps for your system
@@ -80,10 +85,14 @@ Run it again to update; your settings are kept.
 2. Double-click `AgentChime.exe`. The build is unsigned, so SmartScreen may warn you. Click
    **More info**, then **Run anyway**.
 
+The zip has two programs, `AgentChime.exe` and `AgentChime-Settings.exe`. Keep them together. The
+Settings window needs the Microsoft Edge WebView2 Runtime. It is built into Windows 11 and present
+on up-to-date Windows 10. Without it, Settings opens in your browser instead.
+
 On every start the program copies itself and its sounds to `%LOCALAPPDATA%\AgentChime`. The hooks
 point at that copy, so you can move or delete the downloaded folder afterwards. A tray icon appears.
 If AgentChime is already running, starting a new version still updates that copy and opens the
-running app's settings page; quit AgentChime and start it again to run the new version.
+running app's settings page and replaces the running app (see Updating).
 Use a current Claude Code version (see the table above).
 
 From source (needs [Go](https://go.dev/dl/) 1.26 or later and Git), in PowerShell:
@@ -101,6 +110,16 @@ This `AgentChime.exe` works like the release build: on start it copies itself to
 
 ### Linux
 
+#### From the .deb (Ubuntu 24.04+, Debian 13+)
+
+```bash
+sudo apt install ./AgentChime-<version>-linux-amd64.deb
+```
+
+Use the `arm64` file on ARM. Then open AgentChime from your app menu once.
+
+#### From the tarball
+
 1. Unpack `AgentChime-<version>-linux-<arch>.tar.gz`.
 2. Run the installer:
 
@@ -111,32 +130,53 @@ cd AgentChime-<version>-linux-<arch>
 ```
 
 `install.sh` copies the program to `~/.local/bin`, the launcher to `~/.local/share/applications`
-and the icon to `~/.local/share/icons`. Start AgentChime from your application menu or run
+and the icon to `~/.local/share/icons`. It also installs the Settings window program,
+`agentchime-settings`, next to `agentchime`. Start AgentChime from your application menu or run
 `agentchime`.
 
-From source (needs [Go](https://go.dev/dl/) 1.26 or later, Git, and `zip` or `python3`): build the
-release files yourself, then install from the one for your machine (`amd64`, or `arm64` on ARM):
+From source (needs [Go](https://go.dev/dl/) 1.26 or later, Git, and the GTK 4 and WebKitGTK 6.0
+development packages, `libgtk-4-dev libwebkitgtk-6.0-dev`): build the release files yourself, then
+install from the one for your machine (`amd64`, or `arm64` on ARM):
 
 ```bash
 git clone https://github.com/quanht99/agent-chime.git
 cd agent-chime
-go/scripts/package.sh 0.2.0
+go/scripts/package-linux.sh 0.2.0 "$(go env GOARCH)"
 cd go/dist
 tar xzf AgentChime-0.2.0-linux-amd64.tar.gz
 cd AgentChime-0.2.0-linux-amd64
 ./install.sh
 ```
 
+The Settings window needs GTK 4.10 or later and WebKitGTK 6.0 (Ubuntu 24.04+, Debian 13+, current
+Fedora). On older systems, Settings opens in your browser instead.
+
 On GNOME the tray icon needs the AppIndicator extension (for example "AppIndicator and
 KStatusNotifierItem Support"). Without it you will not see an icon; open the settings page instead
 (run `agentchime` again, or use the launcher) and use it from there.
 
+## Updating
+
+AgentChime tells you in the menu and in Settings when a new version is out. **Update** downloads
+it, checks its signature, installs it and restarts. Your settings, sounds and hooks are kept.
+**Check now** works even when the daily check is turned off.
+
+- **Windows and Linux:** starting a newer downloaded copy also replaces the running one. Starting
+  an older copy runs the installed newer one instead. To go back to an older version, uninstall
+  first (see Uninstall), then install the older one.
+- **.deb:** AgentChime updates your own copy. `apt` still shows the version you installed. An
+  `apt upgrade` to a newer version is picked up at the next start.
+- **macOS:** keep AgentChime in Applications. If you run it from Downloads, or your account can't
+  write to Applications, use the release page instead. After an update the previous version is
+  moved to the Trash.
+
 ## First run
 
-The settings page opens by itself the first time the app starts. On macOS it is a window. On
-Windows and Linux it is a page in your browser, served only on this computer (127.0.0.1) behind a
-random token. Click **Install** next to Claude Code and next to Codex. AgentChime adds its own hook
-group at the end of each file and leaves everything else alone. Before each change it copies the
+The settings page opens by itself the first time the app starts. On macOS, Windows and Linux it
+is a window. On Windows and Linux, if the window can't start, Settings opens in your browser
+instead, at a page served only on this computer (127.0.0.1) behind a random token. Click
+**Install** next to Claude Code and next to Codex. AgentChime adds its own hook group at the end
+of each file and leaves everything else alone. Before each change it copies the
 file to its `Backups` folder (the last 10 copies of each file are kept). The first install may also
 rewrite the file's JSON formatting (key order and spacing); the content stays the same.
 
@@ -174,8 +214,11 @@ may not run. Installing from a folder without spaces in the user name avoids thi
 
 ## Privacy
 
-AgentChime only plays sounds. It does not read your prompts. It makes no network calls and has no
-telemetry.
+AgentChime only plays sounds. It does not read your prompts and has no
+telemetry. The hook never uses the network.
+Once a day AgentChime asks GitHub whether a new version exists. It sends nothing about you or
+your prompts; GitHub sees your IP address, as with any download. You can turn this off in
+Settings → Updates.
 
 ## Files and logs
 
@@ -189,8 +232,12 @@ telemetry.
 | Codex hooks | `~/.codex/hooks.json` | `%USERPROFILE%\.codex\hooks.json` | `~/.codex/hooks.json` |
 
 On Windows and Linux the data folder holds `config.json`, `state.json`,
-`agentchime.log`, `Sounds`, `CustomSounds`, `Backups` and the installed program
-(`AgentChime.exe` or `agentchime`).
+`agentchime.log`, `Sounds`, `CustomSounds`, `Backups` and the installed programs
+(`AgentChime.exe` and `AgentChime-Settings.exe`, or `agentchime` and `agentchime-settings`).
+
+The Settings window keeps web view data too. On Windows it is `%LOCALAPPDATA%\AgentChime\webview`,
+inside the data folder. On Linux the data folder may also hold web view data, and the WebKit
+cache follows `XDG_CACHE_HOME` (default `~/.cache/agentchime`).
 
 AgentChime writes only `~/.claude/settings.json` and `~/.codex/hooks.json`. It never writes
 `~/.codex/config.toml` or the Codex `notify` setting.
@@ -223,16 +270,20 @@ Swift). Only add sounds you are allowed to redistribute.
 1. In Settings, click **Remove** for Claude Code and for Codex. If you turned on start at login,
    turn it off first.
 2. Quit AgentChime from the tray icon.
-3. Delete `%LOCALAPPDATA%\AgentChime`.
+3. Delete `%LOCALAPPDATA%\AgentChime`. `AgentChime-Settings.exe` and the `webview` folder go with
+   it.
 
 ### Linux
 
 1. In Settings, click **Remove** for Claude Code and for Codex. If you turned on start at login,
    turn it off first.
 2. Quit AgentChime from the tray icon.
-3. Delete `~/.local/bin/agentchime`, `~/.local/share/applications/agentchime.desktop`, the
-   AgentChime icon in `~/.local/share/icons`, and the data folder
-   `${XDG_DATA_HOME:-~/.local/share}/agentchime`.
+3. If you installed the `.deb`, run `sudo apt remove agentchime`.
+4. If you used the tarball, delete `~/.local/bin/agentchime`, `~/.local/bin/agentchime-settings`,
+   `~/.local/share/applications/agentchime.desktop` and the AgentChime icon in
+   `~/.local/share/icons`.
+5. Delete the data folder `${XDG_DATA_HOME:-~/.local/share}/agentchime` and the web view folder
+   `~/.cache/agentchime`.
 
 ## Development
 
@@ -248,6 +299,12 @@ Windows and Linux (Go 1.26, no cgo):
 ```bash
 cd go && CGO_ENABLED=0 go test ./...
 go/scripts/docker-test.sh      # runs the Go tests on Linux in Docker (golang:1.26)
+```
+
+The Settings window has a GUI smoke test. It runs only in Docker:
+
+```bash
+bash go/scripts/docker-gui-smoke.sh
 ```
 
 Tests never touch your real `~/.claude`, `~/.codex`, AppData, `~/.local` or Library folders. Each
@@ -269,19 +326,40 @@ xcodebuild -project AgentChime.xcodeproj -scheme AgentChime -configuration Debug
 open build/Build/Products/Debug/AgentChime.app
 ```
 
+### Update signing
+
+Updates are signed with an Ed25519 key. The owner sets it up once:
+
+1. Run `cd go && go run ./scripts/updatekey -out <a file outside the repo>`. It prints only the
+   public key.
+2. Put the public key in `go/internal/update/keys.go` and `AgentChime/Update/UpdateKeys.swift`.
+   `TestSwiftKeysMatchGo` checks that they match.
+3. Add the content of that file as the Actions secret `UPDATE_SIGNING_KEY`.
+4. Keep a backup of the file.
+5. If the key is lost, users update by hand once.
+
+Test builds use `-tags updatetest` (Go) or `AGENTCHIME_UPDATE_TEST` (Swift). They use a test key
+and a local server, and the packaging scripts refuse to ship them. The end-to-end scripts are
+`go/scripts/e2e-update-linux.sh` (run through `go/scripts/docker-test.sh`) and
+`scripts/e2e-update-mac.sh`.
+
 ### Release packages
 
 ```bash
-go/scripts/package.sh <version>    # Windows and Linux, amd64 and arm64, into go/dist/
-scripts/package-mac.sh <version>   # macOS zip, into dist/
+go/scripts/package-windows.sh <version>          # Windows zips, amd64 and arm64, into go/dist/
+go/scripts/package-linux.sh <version> <arch>     # Linux tar.gz and .deb, into go/dist/
+scripts/package-mac.sh <version>                 # macOS zip, into dist/
 ```
 
-Outputs in `go/dist/`: `AgentChime-<version>-windows-<arch>.zip` and
-`AgentChime-<version>-linux-<arch>.tar.gz`. Builds use `CGO_ENABLED=0`; Windows builds add
-`-ldflags "-H windowsgui"`. The macOS app is built for both Apple silicon and Intel.
+Outputs in `go/dist/`: `AgentChime-<version>-windows-<arch>.zip`,
+`AgentChime-<version>-linux-<arch>.tar.gz` and `AgentChime-<version>-linux-<arch>.deb`. The Windows
+zips are cross-built with `CGO_ENABLED=0` and `-H windowsgui`. The Linux package builds only on
+Linux, and only for the machine's own architecture, because the settings window helper links GTK 4
+and WebKitGTK 6.0 (`apt install libgtk-4-dev libwebkitgtk-6.0-dev`). Release files are made by CI
+from a tag. The macOS app is built for both Apple silicon and Intel.
 
-To publish a release, push a version tag. The `release` workflow builds all five files on GitHub,
-adds `SHA256SUMS.txt`, and creates the release:
+To publish a release, push a version tag (`vX.Y.Z`). The `release` workflow builds the 7 archives
+on GitHub, adds `SHA256SUMS.txt`, `latest.json` and `latest.json.sig`, and creates the release:
 
 ```bash
 git tag v0.2.0

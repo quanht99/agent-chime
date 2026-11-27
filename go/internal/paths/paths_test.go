@@ -14,6 +14,7 @@ func TestResolveWindows(t *testing.T) {
 	cases := map[string][2]string{
 		"DataDir":         {p.DataDir, `C:\Users\example\AppData\Local\AgentChime`},
 		"Program":         {p.Program, `C:\Users\example\AppData\Local\AgentChime\AgentChime.exe`},
+		"SettingsHelper":  {p.SettingsHelper, `C:\Users\example\AppData\Local\AgentChime\AgentChime-Settings.exe`},
 		"AppLock":         {p.AppLock, `C:\Users\example\AppData\Local\AgentChime\app.lock`},
 		"ClaudeSettings":  {p.ClaudeSettings, `C:\Users\example\.claude\settings.json`},
 		"CodexHooks":      {p.CodexHooks, `C:\Users\example\.codex\hooks.json`},
@@ -38,8 +39,14 @@ func TestResolveLinuxXDG(t *testing.T) {
 	if p.Program != "/home/example/data/agentchime/agentchime" {
 		t.Errorf("Program = %q", p.Program)
 	}
+	if p.SettingsHelper != "/home/example/data/agentchime/agentchime-settings" {
+		t.Errorf("SettingsHelper = %q", p.SettingsHelper)
+	}
 	if p.SystemSoundsDir != "/usr/share/sounds/freedesktop/stereo" {
 		t.Errorf("SystemSoundsDir = %q", p.SystemSoundsDir)
+	}
+	if p.DebDir != "/usr/lib/agentchime" {
+		t.Errorf("DebDir = %q", p.DebDir)
 	}
 }
 
@@ -56,11 +63,17 @@ func TestResolveAgentChimeHomeWins(t *testing.T) {
 	if p.AutostartFile != "/tmp/h/.config/autostart/agentchime.desktop" {
 		t.Errorf("AutostartFile = %q", p.AutostartFile)
 	}
+	if p.DebDir != "/tmp/h/usr-lib-agentchime" {
+		t.Errorf("DebDir = %q", p.DebDir)
+	}
 	w := Resolve("windows", env(map[string]string{
 		"AGENTCHIME_HOME": `C:\t`, "LOCALAPPDATA": `D:\x`, "WINDIR": `D:\w`,
 	}), `C:\Users\example`)
 	if w.DataDir != `C:\t\AppData\Local\AgentChime` {
 		t.Errorf("windows DataDir = %q", w.DataDir)
+	}
+	if w.DebDir != "" {
+		t.Errorf("windows DebDir = %q", w.DebDir)
 	}
 	if w.SystemSoundsDir != `C:\t\system-sounds` {
 		t.Errorf("windows SystemSoundsDir = %q", w.SystemSoundsDir)

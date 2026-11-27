@@ -10,13 +10,14 @@ import (
 	"github.com/quanht99/agent-chime/go/internal/model"
 	"github.com/quanht99/agent-chime/go/internal/state"
 	"github.com/quanht99/agent-chime/go/internal/testenv"
+	"github.com/quanht99/agent-chime/go/internal/update"
 )
 
 var now = time.Date(2026, 1, 2, 12, 0, 0, 0, time.Local)
 
 func TestTrayModel(t *testing.T) {
 	c := config.Default()
-	m := TrayModel(c, state.State{}, now)
+	m := TrayModel(c, state.State{}, update.Status{}, now)
 	if m.Status != i18n.T("statusOn", i18n.EN) || m.Muted || m.LastAlert != i18n.T("menuNoAlert", i18n.EN) {
 		t.Fatalf("unmuted: %+v", m)
 	}
@@ -26,20 +27,20 @@ func TestTrayModel(t *testing.T) {
 
 	until := time.Date(2026, 1, 2, 15, 30, 0, 0, time.Local)
 	c.MutedUntil = &model.Time{Time: until}
-	m = TrayModel(c, state.State{}, now)
+	m = TrayModel(c, state.State{}, update.Status{}, now)
 	if !m.Muted || m.Status != i18n.T("statusMutedUntil", i18n.EN, "15:30") {
 		t.Fatalf("muted until: %+v", m)
 	}
 
 	c.MutedUntil = &model.Time{Time: model.Forever}
-	m = TrayModel(c, state.State{}, now)
+	m = TrayModel(c, state.State{}, update.Status{}, now)
 	if !m.Muted || m.Status != i18n.T("statusMuted", i18n.EN) {
 		t.Fatalf("forever: %+v", m)
 	}
 
 	c.Language = i18n.VI
 	st := state.State{LastAlert: &model.AlertRecord{Agent: model.Claude, Kind: model.Done, Date: model.Time{Time: now}}}
-	m = TrayModel(c, st, now)
+	m = TrayModel(c, st, update.Status{}, now)
 	if m.Labels.Quit != "Thoát" || m.Labels.Settings != i18n.T("menuSettings", i18n.VI) {
 		t.Fatalf("vi labels: %+v", m.Labels)
 	}
@@ -70,5 +71,17 @@ func TestMarkSettingsShown(t *testing.T) {
 	markSettingsShown(p)
 	if !config.Load(p).SettingsShownOnce {
 		t.Fatal("not set")
+	}
+}
+
+func TestTrayModelUpdateLabel(t *testing.T) {
+	c := config.Default()
+	m := TrayModel(c, state.State{}, update.Status{Phase: update.Available, Current: "0.3.0", Latest: "0.3.1"}, now)
+	if m.UpdateLabel != "Update to 0.3.1…" {
+		t.Fatalf("label %q", m.UpdateLabel)
+	}
+	m = TrayModel(c, state.State{}, update.Status{Phase: update.UpToDate, Current: "0.3.1", Latest: "0.3.1"}, now)
+	if m.UpdateLabel != "" {
+		t.Fatalf("label %q", m.UpdateLabel)
 	}
 }

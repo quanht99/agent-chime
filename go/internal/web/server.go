@@ -20,6 +20,7 @@ import (
 	"github.com/quanht99/agent-chime/go/internal/hooks"
 	"github.com/quanht99/agent-chime/go/internal/paths"
 	"github.com/quanht99/agent-chime/go/internal/sounds"
+	"github.com/quanht99/agent-chime/go/internal/update"
 )
 
 //go:embed static/index.html static/app.js static/style.css
@@ -31,6 +32,15 @@ type Autostart interface {
 	Enabled() bool
 	Enable() error
 	Disable() error
+}
+
+// Updates is the self-updater; nil means no Updates section and no update routes.
+type Updates interface {
+	Status() update.Status
+	StartCheck()
+	StartInstall()
+	OpenReleasePage() error
+	Restart() error
 }
 
 // Deps is everything the server needs from the rest of the app.
@@ -47,6 +57,7 @@ type Deps struct {
 	TrayAvailable func() bool
 	ProgramExists func() bool
 	Autostart     Autostart
+	Updates       Updates
 }
 
 type Server struct {

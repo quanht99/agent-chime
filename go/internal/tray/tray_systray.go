@@ -26,6 +26,7 @@ func Run(model func() Model, act Actions, ready func()) {
 		systray.SetIcon(iconBytes)
 		systray.SetTooltip("AgentChime")
 		m := model()
+		upd := systray.AddMenuItem(m.UpdateLabel, "")
 		status := systray.AddMenuItem(m.Status, "")
 		status.Disable()
 		last := systray.AddMenuItem(m.LastAlert, "")
@@ -42,6 +43,12 @@ func Run(model func() Model, act Actions, ready func()) {
 
 		refresh := func() {
 			m := model()
+			if m.UpdateLabel == "" {
+				upd.Hide()
+			} else {
+				upd.SetTitle(m.UpdateLabel)
+				upd.Show()
+			}
 			status.SetTitle(m.Status)
 			last.SetTitle(m.LastAlert)
 			mute.SetTitle(m.Labels.Mute)
@@ -78,6 +85,10 @@ func Run(model func() Model, act Actions, ready func()) {
 					act.Mute(nil)
 				case <-unmute.ClickedCh:
 					act.Unmute()
+				case <-upd.ClickedCh:
+					if act.Update != nil {
+						act.Update()
+					}
 				case <-settings.ClickedCh:
 					act.OpenSettings()
 				case <-quit.ClickedCh:

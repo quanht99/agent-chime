@@ -9,6 +9,9 @@ ICONS="$HOME/.local/share/icons/hicolor/64x64/apps"
 
 mkdir -p "$BIN" "$APPS" "$ICONS"
 install -m 0755 "$DIR/agentchime" "$BIN/agentchime"
+if [ -f "$DIR/agentchime-settings" ]; then
+	install -m 0755 "$DIR/agentchime-settings" "$BIN/agentchime-settings"
+fi
 install -m 0644 "$DIR/agentchime.png" "$ICONS/agentchime.png"
 
 cat >"$APPS/agentchime.desktop" <<DESKTOP
@@ -18,6 +21,7 @@ Name=AgentChime
 Comment=Sound alerts for Claude Code and Codex
 Exec="$HOME/.local/bin/agentchime"
 Icon=agentchime
+StartupWMClass=agentchime
 Terminal=false
 Categories=Utility;
 DESKTOP

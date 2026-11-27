@@ -2,6 +2,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 
@@ -9,18 +10,25 @@ import (
 	"github.com/quanht99/agent-chime/go/internal/audio"
 	"github.com/quanht99/agent-chime/go/internal/hook"
 	"github.com/quanht99/agent-chime/go/internal/paths"
+	"github.com/quanht99/agent-chime/go/internal/version"
 )
 
 func main() {
 	args := os.Args[1:]
 	if len(args) > 0 {
 		switch args[0] {
+		case "--version":
+			fmt.Println(version.Version)
+			os.Exit(0)
 		case "hook":
 			runHook(args[1:])
 			os.Exit(0)
 		case "play":
 			runPlay(args[1:])
 			os.Exit(0)
+		case "--after-update":
+			app.RunAfterUpdate()
+			return
 		case "--background":
 			app.Run(true)
 			return

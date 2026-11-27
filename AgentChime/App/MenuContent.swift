@@ -2,11 +2,17 @@ import SwiftUI
 
 struct MenuContent: View {
     @ObservedObject var state: AppState
+    @ObservedObject var updater: Updater
 
     var body: some View {
         let lang = state.lang
         let cfg = state.config
         let muted = cfg.isMuted(at: state.now)
+
+        if let label = updater.menuLabel {
+            Button(label) { updater.install() }
+            Divider()
+        }
 
         if !muted {
             Text(L.t(.statusOn, lang))
@@ -34,11 +40,11 @@ struct MenuContent: View {
             Text(w.text(lang))
         }
         if state.needsSetup {
-            Button(L.t(.menuNeedsSetup, lang)) { SettingsWindow.show(state) }
+            Button(L.t(.menuNeedsSetup, lang)) { SettingsWindow.show(state, updater: updater) }
         }
 
         Divider()
-        Button(L.t(.menuSettings, lang)) { SettingsWindow.show(state) }
+        Button(L.t(.menuSettings, lang)) { SettingsWindow.show(state, updater: updater) }
             .keyboardShortcut(",")
         Button(L.t(.menuQuit, lang)) { NSApplication.shared.terminate(nil) }
             .keyboardShortcut("q")

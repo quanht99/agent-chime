@@ -19,6 +19,7 @@ import (
 	"github.com/quanht99/agent-chime/go/internal/i18n"
 	"github.com/quanht99/agent-chime/go/internal/model"
 	"github.com/quanht99/agent-chime/go/internal/state"
+	"github.com/quanht99/agent-chime/go/internal/update"
 	"github.com/quanht99/agent-chime/go/internal/version"
 )
 
@@ -87,6 +88,14 @@ func (s *Server) serveAPI(w http.ResponseWriter, r *http.Request) {
 		h = s.handleOpenLog
 	case path == "/api/quit":
 		h = s.handleQuit
+	case s.d.Updates != nil && path == "/api/update/check":
+		h = s.handleUpdateCheck
+	case s.d.Updates != nil && path == "/api/update/install":
+		h = s.handleUpdateInstall
+	case s.d.Updates != nil && path == "/api/update/release-page":
+		h = s.handleReleasePage
+	case s.d.Updates != nil && path == "/api/update/restart":
+		h = s.handleUpdateRestart
 	default:
 		http.NotFound(w, r)
 		return
@@ -197,7 +206,7 @@ func (s *Server) buildState() obj {
 		warning = t("soundWarning", w.Path)
 	}
 
-	return obj{
+	out := obj{
 		"version": version.Version,
 		"lang":    string(lang),
 		"texts":   texts,
@@ -218,6 +227,49 @@ func (s *Server) buildState() obj {
 		"noPlayer": s.noPlayer.Load(),
 		"noTray":   d.TrayAvailable != nil && !d.TrayAvailable(),
 	}
+	if d.Updates != nil {
+		us := d.Updates.Status()
+		last := ""
+		if us.LastSuccess != nil {
+			last = t("lastChecked", us.LastSuccess.Local().Format("2006-01-02 15:04"))
+		}
+		out["update"] = obj{
+			"phase": string(us.Phase), "current": us.Current, "latest": us.Latest, "releasePage": us.ReleasePage,
+			"checkAuto": cfg.CheckForUpdates, "canInstall": us.CanInstall(),
+			"busy": us.Phase == update.Checking || us.Phase == update.Downloading,
+			"text": updateText(us, t), "lastChecked": last,
+		}
+	}
+	return out
+}
+
+// updateText is the status line under the Updates buttons.
+func updateText(st update.Status, t func(i18n.Key, ...string) string) string {
+	switch st.Phase {
+	case update.Checking:
+		return t("checking")
+	case update.UpToDate:
+		return t("upToDate")
+	case update.Available:
+		return t("updateAvailable", st.Latest)
+	case update.Downloading:
+		return t("downloading")
+	case update.CheckFailed:
+		return t("checkFailed")
+	case update.Unverified:
+		return t("updateUnverified")
+	case update.Failed:
+		return t("updateFailed", st.Detail)
+	case update.BadBuild:
+		return t("newVersionFailed")
+	case update.RestartNeeded:
+		return t("restartToFinish")
+	case update.Updated:
+		return t("updatedTo", st.Current)
+	case update.SourceBuild:
+		return t("sourceBuild")
+	}
+	return ""
 }
 
 // hookText mirrors SettingsView.statusText; trust is "" for Claude.
@@ -301,6 +353,7 @@ func (s *Server) handleConfig(w http.ResponseWriter, _ *http.Request, body []byt
 		DoneThresholdSeconds *float64            `json:"doneThresholdSeconds"`
 		AlertHeadless        *bool               `json:"alertHeadless"`
 		Language             *i18n.Lang          `json:"language"`
+		CheckForUpdates      *bool               `json:"checkForUpdates"`
 	}
 	if !decode(w, body, &req) {
 		return
@@ -337,6 +390,9 @@ func (s *Server) handleConfig(w http.ResponseWriter, _ *http.Request, body []byt
 	}
 	if req.Language != nil {
 		cfg.Language = *req.Language
+	}
+	if req.CheckForUpdates != nil {
+		cfg.CheckForUpdates = *req.CheckForUpdates
 	}
 	if !s.saveConfig(w, cfg) {
 		return
@@ -564,4 +620,33 @@ func (s *Server) handleQuit(w http.ResponseWriter, _ *http.Request, _ []byte) {
 	if s.d.Quit != nil {
 		go s.d.Quit()
 	}
+}
+
+// ---- updates ----
+
+func (s *Server) handleUpdateCheck(w http.ResponseWriter, _ *http.Request, _ []byte) {
+	s.d.Updates.StartCheck()
+	s.respondState(w)
+}
+
+func (s *Server) handleUpdateInstall(w http.ResponseWriter, _ *http.Request, _ []byte) {
+	s.d.Updates.StartInstall()
+	s.respondState(w)
+}
+
+func (s *Server) handleReleasePage(w http.ResponseWriter, _ *http.Request, _ []byte) {
+	if err := s.d.Updates.OpenReleasePage(); err != nil {
+		errMsg(w, http.StatusInternalServerError, "open_failed", err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, obj{"ok": true})
+}
+
+// handleUpdateRestart answers first: Restart replaces this process.
+func (s *Server) handleUpdateRestart(w http.ResponseWriter, _ *http.Request, _ []byte) {
+	writeJSON(w, http.StatusOK, obj{"ok": true})
+	if f, ok := w.(http.Flusher); ok {
+		f.Flush()
+	}
+	go func() { _ = s.d.Updates.Restart() }()
 }

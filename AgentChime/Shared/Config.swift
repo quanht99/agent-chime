@@ -43,12 +43,13 @@ struct AgentChimeConfig: Codable, Equatable {
     var alertHeadless = false
     var language = Language.en
     var settingsShownOnce = false
+    var checkForUpdates = true
 
     init() {}
 
     enum CodingKeys: String, CodingKey {
         case soundDone, soundAttention, volumeDone, volumeAttention, doneThresholdSeconds
-        case mutedUntil, alertHeadless, language, settingsShownOnce
+        case mutedUntil, alertHeadless, language, settingsShownOnce, checkForUpdates
     }
 
     init(from decoder: Decoder) throws {
@@ -65,6 +66,7 @@ struct AgentChimeConfig: Codable, Equatable {
         alertHeadless = (try? c.decodeIfPresent(Bool.self, forKey: .alertHeadless)) ?? d.alertHeadless
         language = (try? c.decodeIfPresent(Language.self, forKey: .language)) ?? d.language
         settingsShownOnce = (try? c.decodeIfPresent(Bool.self, forKey: .settingsShownOnce)) ?? d.settingsShownOnce
+        checkForUpdates = (try? c.decodeIfPresent(Bool.self, forKey: .checkForUpdates)) ?? d.checkForUpdates
     }
 
     func sound(for kind: AlertKind) -> SoundChoice {
