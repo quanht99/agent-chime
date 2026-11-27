@@ -3,9 +3,9 @@ import Foundation
 
 /// The compiled-in trust anchor. A release build has no way to change the key or the base URL.
 enum UpdateKeys {
-    /// The owner's release public key (hex). Empty until the owner provides it.
+    /// The owner's release public key (hex).
     /// go/internal/update/keys_swift_test.go keeps this equal to Go's releasePublicKeyHex.
-    static let releasePublicKeyHex = ""
+    static let releasePublicKeyHex = "6555c7a7ff8beca7d3286b7b8dd04ff3e5fcd880281ffcf2f54a03457d4929fe"
 
     #if AGENTCHIME_UPDATE_TEST
     /// TEST ONLY. Equals go/internal/update/testdata/TEST-ONLY-public-key.hex.

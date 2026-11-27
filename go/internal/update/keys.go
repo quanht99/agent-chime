@@ -9,8 +9,9 @@ import (
 )
 
 // releasePublicKeyHex is the Ed25519 public key (hex) that signs releases.
-// The owner supplies it; until then no release can be verified.
-const releasePublicKeyHex = ""
+// The private half lives only in the UPDATE_SIGNING_KEY Actions secret. Changing this key means
+// copies built with the old one can't verify new releases, so their users update by hand once.
+const releasePublicKeyHex = "6555c7a7ff8beca7d3286b7b8dd04ff3e5fcd880281ffcf2f54a03457d4929fe"
 
 // TestBuild is false in release builds.
 const TestBuild = false

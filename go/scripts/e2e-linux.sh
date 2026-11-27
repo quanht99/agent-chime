@@ -58,7 +58,7 @@ mkdir -p "$HOME/build" "$DATA"
 	-o "$HOME/build/agentchime-new" ./cmd/agentchime)
 
 # 2. config
-printf '%s' '{"doneThresholdSeconds":0,"volumeDone":0.5,"settingsShownOnce":true}' >"$DATA/config.json"
+printf '%s' '{"doneThresholdSeconds":0,"volumeDone":0.5,"settingsShownOnce":true,"checkForUpdates":false}' >"$DATA/config.json"
 
 # 3. fake pw-play first on PATH
 mkdir -p "$HOME/fakebin"
